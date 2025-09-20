@@ -89,13 +89,6 @@ const Reports = () => {
     }
   };
 
-  const exportToCSV = () => {
-    toast.info("La fonctionnalité d'exportation sera bientôt disponible");
-  };
-
-  const printReport = () => {
-    window.print();
-  };
 
   const renderTopProducts = () => (
     <div className="space-y-6">
@@ -354,26 +347,6 @@ const Reports = () => {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={exportToCSV}
-                className="px-3 py-2 md:px-4 md:py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 flex items-center transition-colors text-sm md:text-base"
-              >
-                <FaDownload className="ml-2" /> Exporter
-              </button>
-              <button
-                onClick={printReport}
-                className="px-3 py-2 md:px-4 md:py-2 bg-gray-600 text-white rounded-xl hover:bg-gray-700 flex items-center transition-colors text-sm md:text-base"
-              >
-                <FaPrint className="ml-2" /> Imprimer
-              </button>
-              <button
-                onClick={activeTab === "low-stock" ? fetchLowStockProducts : fetchSalesReport}
-                className="px-3 py-2 md:px-4 md:py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 flex items-center transition-colors text-sm md:text-base"
-              >
-                <FaSync className="ml-2" /> Actualiser
-              </button>
-            </div>
           </div>
         </div>
 

@@ -248,16 +248,6 @@ const Invoices = () => {
           >
             Voir les factures
           </button>
-          <button
-            onClick={() => setViewMode("stats")}
-            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-              viewMode === "stats"
-                ? "bg-indigo-600 text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            Statistiques
-          </button>
         </div>
 
         {viewMode === "table" ? (
