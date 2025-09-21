@@ -19,6 +19,7 @@ const invoiceSchema = new mongoose.Schema(
     customerName: { type: String, required: true, trim: true },
     customerPhone: { type: String, trim: true },
     customerEmail: { type: String, trim: true, lowercase: true },
+    customerICE: { type: String, trim: true }, // ← هنا أضفنا ICE
     items: [invoiceItemSchema],
     subtotal: { type: Number, required: true, min: 0 },
     tax: { type: Number, default: 0, min: 0 },

@@ -11,6 +11,7 @@ import {
   FaUser,
   FaPhone,
   FaEnvelope,
+  FaIdCard,
 } from "react-icons/fa";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
@@ -43,18 +44,20 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
 
   // دالة لتنسيق السعر كدرهم مغربي
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("fr-MA", {
+      style: "currency",
+      currency: "MAD",
+      minimumFractionDigits: 2,
     }).format(price);
   };
 
   const formik = useFormik({
+    // داخل initialValues
     initialValues: {
       customerName: invoice?.customerName || "",
       customerPhone: invoice?.customerPhone || "",
       customerEmail: invoice?.customerEmail || "",
+      customerICE: invoice?.customerICE || "", // صححت هذا السطر
       items:
         invoice?.items?.map((item) => ({
           productId: item.product?._id || item.product,
@@ -65,6 +68,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
       paymentMethod: invoice?.paymentMethod || "Espèces",
       notes: invoice?.notes || "",
     },
+
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
@@ -83,7 +87,9 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Échec de l'enregistrement de la facture");
+          throw new Error(
+            errorData.message || "Échec de l'enregistrement de la facture"
+          );
         }
 
         onSuccess();
@@ -247,6 +253,31 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                 <FaEnvelope className="absolute left-3 top-3.5 text-gray-400" />
               </div>
             </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ICE
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="customerICE"
+                  value={formik.values.customerICE}
+                  onChange={formik.handleChange}
+                  className={inputClass(
+                    formik.touched.customerICE,
+                    formik.errors.customerICE
+                  )}
+                  placeholder="Entrez le numéro ICE"
+                />
+                <FaIdCard className="absolute left-3 top-3.5 text-gray-400" />
+              </div>
+              {formik.touched.customerICE && formik.errors.customerICE && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formik.errors.customerICE}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Ajouter des produits */}
@@ -274,8 +305,8 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                   .filter((p) => p.quantity > 0)
                   .map((product) => (
                     <option key={product._id} value={product._id}>
-                      {product.name} - {formatPrice(product.price)} - Disponible:{" "}
-                      {product.quantity}
+                      {product.name} - {formatPrice(product.price)} -
+                      Disponible: {product.quantity}
                     </option>
                   ))}
               </select>
@@ -332,7 +363,9 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                     return (
                       <tr key={index}>
                         <td className="px-4 py-3">{product.name}</td>
-                        <td className="px-4 py-3">{formatPrice(product.price)}</td>
+                        <td className="px-4 py-3">
+                          {formatPrice(product.price)}
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <button
@@ -487,7 +520,6 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
           </button>
         </div>
       </form>
-
     </>
   );
 };

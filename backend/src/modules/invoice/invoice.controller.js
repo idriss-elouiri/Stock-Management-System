@@ -13,6 +13,7 @@ export const createInvoice = async (req, res, next) => {
       customerName,
       customerPhone,
       customerEmail,
+      customerICE, // ← أضف هذا السطر
       items,
       tax = 0,
       discount = 0,
@@ -61,6 +62,7 @@ export const createInvoice = async (req, res, next) => {
       customerName,
       customerPhone,
       customerEmail,
+      customerICE, // ← أضف هنا أيضاً
       items: invoiceItems,
       subtotal,
       tax,
