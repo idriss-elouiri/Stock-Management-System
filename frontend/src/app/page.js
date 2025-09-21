@@ -1,7 +1,10 @@
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layout"
+import Products from "@/components/products/Products";
 
-export default function Home() {
-  return (
-    <Layout>Hello</Layout>
-  );
+export default function ProductsPage() {
+    return (
+        <Layout>
+            <Products />
+        </Layout>
+    );
 }

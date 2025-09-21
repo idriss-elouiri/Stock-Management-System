@@ -8,7 +8,6 @@ import {
   FaChartBar, 
   FaBars,
   FaTimes,
-
   FaUserCircle,
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -35,7 +34,7 @@ const Sidebar = () => {
   }, []);
 
   const menuItems = [
-    { name: "Produits", href: "/products", icon: FaBox },
+    { name: "Produits", href: "/", icon: FaBox },
     { name: "Factures", href: "/invoices", icon: FaFileInvoiceDollar },
     { name: "Rapports", href: "/reports", icon: FaChartBar },
   ];
@@ -77,7 +76,7 @@ const Sidebar = () => {
           </button>
         </div>
 
-        <nav className="p-3 space-y-1 mt-2">
+        <nav className="p-4 space-y-3 mt-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -86,7 +85,7 @@ const Sidebar = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 py-3 px-3 rounded-xl transition-all group relative overflow-hidden
+                className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-all group relative overflow-hidden
                   ${isActive
                     ? "bg-gradient-to-r from-amber-500/90 to-orange-500/90 shadow-lg"
                     : "hover:bg-indigo-700/50 backdrop-blur-sm"
@@ -94,7 +93,7 @@ const Sidebar = () => {
                 onClick={() => isMobile && setIsCollapsed(false)}
               >
                 <div className={`p-2 rounded-lg transition-all ${isActive ? 'bg-white/20' : 'bg-white/10 group-hover:bg-white/20'}`}>
-                  <Icon size={16} className={isActive ? "text-white" : "text-indigo-200"} />
+                  <Icon size={18} className={isActive ? "text-white" : "text-indigo-200"} />
                 </div>
                 <span className={`font-medium text-sm ${isCollapsed ? 'block' : 'hidden md:block'} ${isActive ? 'text-white' : 'text-indigo-100'}`}>
                   {item.name}
@@ -107,7 +106,7 @@ const Sidebar = () => {
                 
                 {/* Tooltip for collapsed state */}
                 {!isCollapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-50">
+                  <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-50">
                     {item.name}
                   </div>
                 )}
@@ -116,7 +115,7 @@ const Sidebar = () => {
           })}
         </nav>
         
-     
+      
       </aside>
     </>
   );
