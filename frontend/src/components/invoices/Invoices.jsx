@@ -5,7 +5,7 @@ import InvoicesTable from "./InvoicesTable";
 import InvoiceForm from "./InvoiceForm";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import logo from "../../../public/logo.png";
 // مكون مؤقت للإحصائيات
 const InvoiceStats = () => (
   <div className="p-6 text-center text-gray-600">
@@ -70,7 +70,8 @@ const Invoices = () => {
       const response = await fetch(`${API_URL}/api/invoices/${id}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new Error("Échec de la suppression de la facture");
+      if (!response.ok)
+        throw new Error("Échec de la suppression de la facture");
       toast.success("Facture supprimée avec succès");
       fetchInvoices();
     } catch (err) {
@@ -89,136 +90,227 @@ const Invoices = () => {
 
   // دالة لتنسيق السعر كدرهم مغربي
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("fr-MA", {
+      style: "currency",
+      currency: "MAD",
+      minimumFractionDigits: 2,
     }).format(price);
   };
 
   const handlePrintInvoice = (invoice) => {
     const printWindow = window.open("", "_blank");
-
-    // التأكد من أن items موجود ومحدد بشكل صحيح
+    const logoPath = logo.src;
     const items = invoice.items || [];
 
+    // حساب الضريبة (مثال: 20%)
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.unitPrice * item.quantity,
+      0
+    );
+    const discountAmount = (subtotal * (invoice.discount || 0)) / 100;
+    const ht = subtotal - discountAmount;
+    const taxRate = 0.2; // 20%
+    const tax = ht * taxRate;
+    const total = ht + tax;
+
     const invoiceContent = `
-  <!DOCTYPE html>
-  <html dir="ltr">
-  <head>
-    <meta charset="UTF-8">
-    <title>Facture ${invoice.invoiceNumber || "inconnu"}</title>
-    <style>
-      body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-      .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #4f46e5; padding-bottom: 15px; }
-      .invoice-title { color: #4f46e5; font-size: 24px; font-weight: bold; }
-      table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-      th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-      th { background-color: #f8fafc; }
-      .totals { margin-left: auto; width: 300px; }
-      .footer { margin-top: 40px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px; color: #666; }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <div>
-        <h1 style="color: #4f46e5;">Votre Magasin</h1>
-        <p>Adresse du magasin, Ville, Pays</p>
-      </div>
-      <div>
-        <h2 class="invoice-title">Facture de Vente</h2>
-        <p>Numéro de facture: ${invoice.invoiceNumber || "inconnu"}</p>
-        <p>Date: ${new Date(invoice.createdAt).toLocaleDateString(
-          "fr-FR"
-        )}</p>
-      </div>
-    </div>
+<!DOCTYPE html>
+<html dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>Facture ${invoice.invoiceNumber || "inconnu"}</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 20px 40px; 
+      color: #333; 
+      font-size: 13px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .logo { max-height: 150px; }
+    .facture-info {
+      border: 1px solid #000;
+      padding: 10px 15px;
+      font-size: 12px;
+    }
+    .facture-info p { margin: 4px 0; }
+    .box {
+      border: 1px solid #000;
+      padding: 10px 15px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    .client-info, .payment-info {
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+    }
+    th { background: #f1f1f1; }
+    .totals {
+      margin-top: 20px;
+      width: 250px;
+      margin-left: auto;
+      border: 1px solid #000;
+    }
+    .totals div {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-bottom: 1px solid #000;
+      font-size: 12px;
+    }
+    .totals div:last-child {
+      font-weight: bold;
+      background: #f1f1f1;
+    }
+ .footer {
+  margin-top: 40px;
+  font-size: 11px;
+  text-align: center;
+  border-top: 2px solid #4f46e5;
+  padding-top: 15px;
+  color: #444;
+  line-height: 1.6;
+}
 
-    <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-      <div>
-        <h3>Informations du magasin:</h3>
-        <p>Nom du magasin: Votre Magasin</p>
-        <p>Téléphone: +212 612-345678</p>
-      </div>
-      <div>
-        <h3>Informations du client:</h3>
-        <p>Nom: ${invoice.customerName || "inconnu"}</p>
-        ${invoice.customerPhone ? `<p>Téléphone: ${invoice.customerPhone}</p>` : ""}
-      </div>
-    </div>
+.footer .thanks {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #4f46e5;
+}
 
-    <h3>Produits:</h3>
-    <table>
+.footer p {
+  margin: 3px 0;
+}
+
+.print-btn {
+  margin-top: 18px;
+  padding: 8px 18px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.print-btn:hover {
+  background: #3730a3;
+}
+
+
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <img src="${logoPath}" alt="Logo" class="logo">
+    </div>
+    <div class="facture-info">
+      <p><strong>FACTURE N°:</strong> ${invoice.invoiceNumber || "inconnu"}</p>
+      <p><strong>Date:</strong> ${new Date(
+        invoice.createdAt
+      ).toLocaleDateString("fr-FR")}</p>
+    </div>
+  </div>
+
+  <!-- Client + Payment -->
+  <div style="display:flex; gap:15px; margin-bottom:20px;">
+   <div class="box payment-info" style="flex:1;">
+      <strong>MODE DE RÈGLEMENT:</strong><br>
+      <p>${invoice.paymentMethod || "Espèces"}</p>
+    </div>
+    <div class="box client-info" style="flex:1;">
+      <strong>CLIENT:</strong><br>
+      <p>Nom: ${invoice.customerName || "inconnu"}</p>
+      ${
+        invoice.customerPhone
+          ? `<p>Téléphone: ${invoice.customerPhone}</p>`
+          : ""
+      }
+      ${invoice.customerICE ? `<p>ICE: ${invoice.customerICE}</p>` : ""}
+    </div>
+  </div>
+
+  <!-- Table Produits -->
+   <table>
       <thead>
         <tr>
-          <th>#</th>
-          <th>Nom du produit</th>
-          <th>Prix</th>
+          <th>Référence</th>
+          <th>Désignation</th>
           <th>Quantité</th>
-          <th>Total</th>
+          <th>P.U. TTC</th>
+          <th>Tx Rem</th>
+          <th>Montant TTC</th>
         </tr>
       </thead>
       <tbody>
-        ${items
-          .map(
-            (item, index) => `
+    ${items
+      .map((item) => {
+        const reference = item.productCode || item.product?.code || "-";
+        const discountRate =
+          item.discountRate !== undefined
+            ? item.discountRate
+            : invoice.discount
+            ? invoice.discount
+            : 0;
+
+        // حساب المبلغ بعد الخصم
+        const amount = item.unitPrice * item.quantity;
+        const discounted = amount - (amount * discountRate) / 100;
+
+        return `
           <tr>
-            <td>${index + 1}</td>
+            <td>${reference}</td>
             <td>${item.productName || "Produit inconnu"}</td>
-            <td>${formatPrice(item.unitPrice)}</td>
             <td>${item.quantity || 0}</td>
-            <td>${formatPrice(item.total)}</td>
+            <td>${formatPrice(item.unitPrice)}</td>
+            <td>${discountRate}%</td>
+            <td>${formatPrice(discounted)}</td>
           </tr>
-        `
-          )
-          .join("")}
-      </tbody>
+        `;
+      })
+      .join("")}
+  </tbody>
     </table>
 
+    <!-- Totaux -->
     <div class="totals">
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span style="font-weight: bold;">Sous-total:</span>
-        <span>${formatPrice(invoice.subtotal)}</span>
-      </div>
-      ${
-        invoice.tax > 0
-          ? `
-        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-          <span style="font-weight: bold;">Taxe:</span>
-          <span>${formatPrice(invoice.tax)}</span>
-        </div>
-      `
-          : ""
-      }
-      ${
-        invoice.discount > 0
-          ? `
-        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-          <span style="font-weight: bold;">Remise:</span>
-          <span>-${formatPrice(invoice.discount)}</span>
-        </div>
-      `
-          : ""
-      }
-      <div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 2px solid #ddd; font-weight: bold; font-size: 18px;">
-        <span>Total:</span>
-        <span>${formatPrice(invoice.total)}</span>
-      </div>
+      <div><span>H.T:</span><span>${formatPrice(ht)}</span></div>
+      <div><span>T.V.A:</span><span>${formatPrice(tax)}</span></div>
+      <div><span>NET À PAYER:</span><span>${formatPrice(total)}</span></div>
     </div>
 
-    <div style="margin-top: 30px;">
-      <h3>Mode de paiement:</h3>
-      <p>${invoice.paymentMethod || "Espèces"}</p>
-    </div>
+  <!-- Footer -->
+<div class="footer">
+  <p class="thanks">Merci pour votre confiance</p>
 
-    <div class="footer">
-      <p>Merci pour votre confiance</p>
-      <button onclick="window.print()" style="padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
-        Imprimer la facture
-      </button>
-    </div>
-  </body>
-  </html>
+  <p>N RUE 43 ETAGE 4 HAY TARIK SIDI BERNOUSSI CASABLANCA, Tél: +212 658569830</p>
+  <p>RC N 661333, IF 66214735, PATENTE 2985974, CNSS 5936021</p>
+  <p>ICE 003663464000088</p>
+
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimer la facture</button>
+</div>
+
+</body>
+</html>
   `;
 
     printWindow.document.write(invoiceContent);
@@ -280,7 +372,9 @@ const Invoices = () => {
             <div className="bg-white rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white z-10 p-4 border-b border-gray-200 flex justify-between items-center">
                 <h2 className="text-xl font-bold text-indigo-800">
-                  {selectedInvoice ? "Voir la facture" : "Créer une nouvelle facture"}
+                  {selectedInvoice
+                    ? "Voir la facture"
+                    : "Créer une nouvelle facture"}
                 </h2>
                 <button
                   onClick={() => setFormOpen(false)}
