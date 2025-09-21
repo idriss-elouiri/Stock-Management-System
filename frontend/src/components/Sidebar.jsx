@@ -8,7 +8,6 @@ import {
   FaChartBar, 
   FaBars,
   FaTimes,
-  FaUserCircle,
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
 

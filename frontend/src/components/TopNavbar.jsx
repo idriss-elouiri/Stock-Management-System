@@ -8,7 +8,6 @@ const TopNavbar = ({ onMenuToggle }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // تحديث الوقت
     const interval = setInterval(() => {
       const now = new Date();
       setCurrentTime(now.toLocaleTimeString("fr-FR"));
@@ -19,7 +18,6 @@ const TopNavbar = ({ onMenuToggle }) => {
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-    // يمكن إضافة منطق لتغيير وضع الظلام هنا
   };
 
   return (
