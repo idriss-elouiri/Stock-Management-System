@@ -8,7 +8,6 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // إغلاق الشريط الجانبي عند تغيير حجم النافذة إلى حجم غير محمول
     const handleResize = () => {
       if (window.innerWidth >= 768) {
         setSidebarOpen(false);
@@ -36,7 +35,6 @@ export default function Layout({ children }) {
           </div>
         </main>
         
-        {/* Footer */}
         <footer className="bg-white/50 border-t border-gray-200/50 py-3 px-6 text-center text-xs text-gray-600">
           © {new Date().getFullYear()} StockPro - Système de Gestion de Stock. Tous droits réservés.
         </footer>
