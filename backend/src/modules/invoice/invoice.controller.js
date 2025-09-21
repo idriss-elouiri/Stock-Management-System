@@ -46,9 +46,9 @@ export const createInvoice = async (req, res, next) => {
       invoiceItems.push({
         product: product._id,
         productCode: product.code,
-        productName: product.name, // حفظ اسم المنتج
+        productName: product.name, 
         quantity: item.quantity,
-        unitPrice: product.price, // حفظ سعر المنتج
+        unitPrice: product.price, 
         total: itemTotal,
       });
 

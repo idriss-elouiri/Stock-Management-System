@@ -37,7 +37,6 @@ const InvoicesTable = ({
   statusFilter,
   onStatusFilterChange,
 }) => {
-  // دالة لتنسيق السعر كدرهم مغربي
   const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-MA', {
       style: 'currency',
