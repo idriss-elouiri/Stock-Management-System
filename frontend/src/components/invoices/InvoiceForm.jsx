@@ -20,9 +20,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
-
   useEffect(() => {
     fetchProducts();
     if (!invoice) {
@@ -192,9 +190,19 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
       }
     });
 
-    const total = subtotal + formik.values.tax - formik.values.discount;
+    // خصم كنسبة مئوية (%)
+    const discountRate = parseFloat(formik.values.discount) || 0;
+    const discountAmount = (subtotal * discountRate) / 100;
+    const ht = subtotal - discountAmount;
 
-    return { subtotal, total };
+    // الضريبة (TVA) كنسبة مئوية (%)
+    const taxRate = parseFloat(formik.values.tax) || 0;
+    const taxAmount = (ht * taxRate) / 100;
+
+    // Net à Payer
+    const total = ht + taxAmount;
+
+    return { subtotal, discountAmount, taxAmount, total };
   };
 
   const { subtotal, total } = calculateTotals();
@@ -456,19 +464,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
               </div>
 
               <div className="flex justify-between">
-                <span>Taxe:</span>
-                <input
-                  type="number"
-                  name="tax"
-                  value={formik.values.tax}
-                  onChange={formik.handleChange}
-                  className="w-20 p-1 border border-gray-300 rounded text-right"
-                  min="0"
-                />
-              </div>
-
-              <div className="flex justify-between">
-                <span>Remise:</span>
+                <span>Remise (%):</span>
                 <input
                   type="number"
                   name="discount"
@@ -476,11 +472,25 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                   onChange={formik.handleChange}
                   className="w-20 p-1 border border-gray-300 rounded text-right"
                   min="0"
+                  max="100"
+                />
+              </div>
+
+              <div className="flex justify-between">
+                <span>Taxe (%):</span>
+                <input
+                  type="number"
+                  name="tax"
+                  value={formik.values.tax}
+                  onChange={formik.handleChange}
+                  className="w-20 p-1 border border-gray-300 rounded text-right"
+                  min="0"
+                  max="100"
                 />
               </div>
 
               <div className="flex justify-between border-t border-gray-200 pt-2 font-bold text-lg">
-                <span>Total:</span>
+                <span>Net à Payer:</span>
                 <span className="text-green-700">{formatPrice(total)}</span>
               </div>
             </div>

@@ -38,10 +38,10 @@ const InvoicesTable = ({
   onStatusFilterChange,
 }) => {
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("fr-MA", {
+      style: "currency",
+      currency: "MAD",
+      minimumFractionDigits: 2,
     }).format(price);
   };
 
@@ -88,12 +88,35 @@ const InvoicesTable = ({
       {
         id: "total",
         header: "Montant total",
-        accessorKey: "total",
-        cell: ({ getValue }) => (
-          <span className="font-medium text-green-700">
-            {formatPrice(getValue())}
-          </span>
-        ),
+        accessorKey: "items", // بدل total استعمل items
+        cell: ({ row }) => {
+          const invoice = row.original;
+          const items = invoice.items || [];
+
+          // حساب subtotal
+          const subtotal = items.reduce(
+            (sum, item) => sum + item.unitPrice * item.quantity,
+            0
+          );
+
+          // الخصم
+          const discountRate = invoice.discount || 0;
+          const discountAmount = (subtotal * discountRate) / 100;
+          const ht = subtotal - discountAmount;
+
+          // الضريبة 20%
+          const taxRate = 0.2;
+          const tax = ht * taxRate;
+
+          // Net à payer
+          const total = ht + tax;
+
+          return (
+            <span className="font-medium text-green-700">
+              {formatPrice(total)}
+            </span>
+          );
+        },
       },
       {
         id: "status",
@@ -102,9 +125,15 @@ const InvoicesTable = ({
         cell: ({ getValue }) => {
           const status = getValue();
           const statusConfig = {
-            "Complété": { color: "bg-green-100 text-green-800", label: "Complété" },
-            "En attente": { color: "bg-yellow-100 text-yellow-800", label: "En attente" },
-            "Annulé": { color: "bg-red-100 text-red-800", label: "Annulé" },
+            Complété: {
+              color: "bg-green-100 text-green-800",
+              label: "Complété",
+            },
+            "En attente": {
+              color: "bg-yellow-100 text-yellow-800",
+              label: "En attente",
+            },
+            Annulé: { color: "bg-red-100 text-red-800", label: "Annulé" },
           };
 
           const config = statusConfig[status] || statusConfig["Complété"];
