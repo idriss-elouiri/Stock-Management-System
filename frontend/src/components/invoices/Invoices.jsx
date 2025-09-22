@@ -6,6 +6,8 @@ import InvoiceForm from "./InvoiceForm";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import logo from "../../../public/logo.png";
+import n2words from "n2words";
+
 // مكون مؤقت للإحصائيات
 const InvoiceStats = () => (
   <div className="p-6 text-center text-gray-600">
@@ -102,7 +104,6 @@ const Invoices = () => {
     const logoPath = logo.src;
     const items = invoice.items || [];
 
-    // حساب الضريبة (مثال: 20%)
     const subtotal = items.reduce(
       (sum, item) => sum + item.unitPrice * item.quantity,
       0
@@ -112,145 +113,124 @@ const Invoices = () => {
     const taxRate = 0.2; // 20%
     const tax = ht * taxRate;
     const total = ht + tax;
+    const totalEntier = Math.floor(total);
+    const totalDecimal = Math.round((total - totalEntier) * 100);
+
+    let netEnLettres = n2words(totalEntier, { lang: "fr" });
+    if (totalDecimal > 0) {
+      netEnLettres += ` et ${n2words(totalDecimal, { lang: "fr" })} centimes`;
+    } else {
+      netEnLettres += " dirhams";
+    }
 
     const invoiceContent = `
-<!DOCTYPE html>
-<html dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <title>Facture ${invoice.invoiceNumber || "inconnu"}</title>
-  <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      padding: 20px 40px; 
-      color: #333; 
-      font-size: 13px;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .logo { max-height: 150px; }
-    .facture-info {
-      border: 1px solid #000;
-      padding: 10px 15px;
-      font-size: 12px;
-    }
-    .facture-info p { margin: 4px 0; }
-    .box {
-      border: 1px solid #000;
-      padding: 10px 15px;
-      margin-top: 8px;
-      font-size: 12px;
-    }
-    .client-info, .payment-info {
-      margin-bottom: 15px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #000;
-      padding: 8px;
-      text-align: center;
-      font-size: 12px;
-    }
-    th { background: #f1f1f1; }
-    .totals {
-      margin-top: 20px;
-      width: 250px;
-      margin-left: auto;
-      border: 1px solid #000;
-    }
-    .totals div {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 10px;
-      border-bottom: 1px solid #000;
-      font-size: 12px;
-    }
-    .totals div:last-child {
-      font-weight: bold;
-      background: #f1f1f1;
-    }
- .footer {
-  margin-top: 40px;
-  font-size: 11px;
-  text-align: center;
-  border-top: 2px solid #4f46e5;
-  padding-top: 15px;
-  color: #444;
-  line-height: 1.6;
-}
-
-.footer .thanks {
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #4f46e5;
-}
-
-.footer p {
-  margin: 3px 0;
-}
-
-.print-btn {
-  margin-top: 18px;
-  padding: 8px 18px;
-  background: #4f46e5;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  transition: background 0.3s ease;
-}
-
-.print-btn:hover {
-  background: #3730a3;
-}
-
-
-  </style>
-</head>
-<body>
-  <!-- Header -->
-  <div class="header">
-    <div>
-      <img src="${logoPath}" alt="Logo" class="logo">
-    </div>
-    <div class="facture-info">
-      <p><strong>FACTURE N°:</strong> ${invoice.invoiceNumber || "inconnu"}</p>
-      <p><strong>Date:</strong> ${new Date(
-        invoice.createdAt
-      ).toLocaleDateString("fr-FR")}</p>
-    </div>
-  </div>
-
-  <!-- Client + Payment -->
-  <div style="display:flex; gap:15px; margin-bottom:20px;">
-   <div class="box payment-info" style="flex:1;">
-      <strong>MODE DE RÈGLEMENT:</strong><br>
-      <p>${invoice.paymentMethod || "Espèces"}</p>
-    </div>
-    <div class="box client-info" style="flex:1;">
-      <strong>CLIENT:</strong><br>
-      <p>Nom: ${invoice.customerName || "inconnu"}</p>
-      ${
-        invoice.customerPhone
-          ? `<p>Téléphone: ${invoice.customerPhone}</p>`
-          : ""
+  <!DOCTYPE html>
+  <html dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Facture ${invoice.invoiceNumber || "inconnu"}</title>
+    <style>
+      body { 
+        font-family: Arial, sans-serif; 
+        padding: 10px 20px; 
+        color: #333; 
+        font-size: 11px;
       }
-      ${invoice.customerICE ? `<p>ICE: ${invoice.customerICE}</p>` : ""}
+      .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .logo { max-height: 80px; }
+      .facture-info {
+        border: 1px solid #000;
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .box {
+        border: 1px solid #000;
+        padding: 5px 10px;
+        margin-top: 5px;
+        font-size: 11px;
+      }
+      .client-info, .payment-info { margin-bottom: 10px; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 11px;
+      }
+      th, td {
+        border: 1px solid #000;
+        padding: 4px 6px;
+        text-align: center;
+      }
+      th { background: #f1f1f1; }
+      .totals {
+        margin-top: 10px;
+        width: 200px;
+        margin-left: auto;
+        border: 1px solid #000;
+        font-size: 11px;
+      }
+      .totals div {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 6px;
+        border-bottom: 1px solid #000;
+      }
+      .totals div:last-child {
+        font-weight: bold;
+        background: #f1f1f1;
+      }
+      .amount-words {
+        width: 100%;
+        text-align: left;
+        margin-top: 8px;
+      }
+      .amount-words .title {
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
+      .amount-words .words {
+        font-size: 11px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div><img src="${logoPath}" alt="Logo" class="logo"></div>
+      <div class="facture-info">
+        <p><strong>FACTURE N°:</strong> ${
+          invoice.invoiceNumber || "inconnu"
+        }</p>
+        <p><strong>Date:</strong> ${new Date(
+          invoice.createdAt
+        ).toLocaleDateString("fr-FR")}</p>
+      </div>
     </div>
-  </div>
 
-  <!-- Table Produits -->
-   <table>
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <div class="box payment-info" style="flex:1;">
+        <strong>MODE DE RÈGLEMENT:</strong><br>
+        <p>${invoice.paymentMethod || "Espèces"}</p>
+      </div>
+      <div class="box client-info" style="flex:1;">
+        <strong>CLIENT:</strong><br>
+        <p>Nom: ${invoice.customerName || "inconnu"}</p>
+        <p>Adress: ${invoice.customerEmail || "inconnu"}</p>
+        ${
+          invoice.customerPhone
+            ? `<p>Téléphone: ${invoice.customerPhone}</p>`
+            : ""
+        }
+        ${invoice.customerICE ? `<p>ICE: ${invoice.customerICE}</p>` : ""}
+      </div>
+    </div>
+
+    <table>
       <thead>
         <tr>
           <th>Référence</th>
@@ -262,54 +242,49 @@ const Invoices = () => {
         </tr>
       </thead>
       <tbody>
-    ${items
-      .map((item) => {
-        const reference = item.productCode || item.product?.code || "-";
-        const discountRate =
-          item.discountRate !== undefined
-            ? item.discountRate
-            : invoice.discount
-            ? invoice.discount
-            : 0;
-
-        // حساب المبلغ بعد الخصم
-        const amount = item.unitPrice * item.quantity;
-        const discounted = amount - (amount * discountRate) / 100;
-
-        return `
-          <tr>
+        ${items
+          .map((item) => {
+            const reference = item.productCode || item.product?.code || "-";
+            const discountRate =
+              item.discountRate !== undefined
+                ? item.discountRate
+                : invoice.discount || 0;
+            const amount = item.unitPrice * item.quantity;
+            const discounted = amount - (amount * discountRate) / 100;
+            return `<tr>
             <td>${reference}</td>
             <td>${item.productName || "Produit inconnu"}</td>
             <td>${item.quantity || 0}</td>
             <td>${formatPrice(item.unitPrice)}</td>
             <td>${discountRate}%</td>
             <td>${formatPrice(discounted)}</td>
-          </tr>
-        `;
-      })
-      .join("")}
-  </tbody>
+          </tr>`;
+          })
+          .join("")}
+      </tbody>
     </table>
 
-    <!-- Totaux -->
+    <div class="amount-words">
+      <div class="title">Arrêté le présente facture à la somme de :</div>
+      <div class="words">${
+        netEnLettres.charAt(0).toUpperCase() + netEnLettres.slice(1)
+      }</div>
+    </div>
+
     <div class="totals">
       <div><span>H.T:</span><span>${formatPrice(ht)}</span></div>
       <div><span>T.V.A:</span><span>${formatPrice(tax)}</span></div>
       <div><span>NET À PAYER:</span><span>${formatPrice(total)}</span></div>
     </div>
-
-  <!-- Footer -->
-<div class="footer">
-
-  <p>N RUE 43 ETAGE 4 HAY TARIK SIDI BERNOUSSI CASABLANCA</p>
-  <p>RC N 661333, IF 66214735, PATENTE 2985974, CNSS 5936021</p>
-  <p>ICE 003663464000088</p>
-
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimer la facture</button>
+    <div class="footer" style="margin-top:15px; text-align:center;">
+  <button class="print-btn" onclick="window.print()" 
+    style="margin-top:10px; padding:6px 14px; font-size:11px; background:#4f46e5; color:white; border:none; border-radius:5px; cursor:pointer;">
+    🖨️ Imprimer la facture
+  </button>
 </div>
 
-</body>
-</html>
+  </body>
+  </html>
   `;
 
     printWindow.document.write(invoiceContent);
