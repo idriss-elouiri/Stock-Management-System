@@ -46,9 +46,9 @@ export const createInvoice = async (req, res, next) => {
       invoiceItems.push({
         product: product._id,
         productCode: product.code,
-        productName: product.name, 
+        productName: product.name,
         quantity: item.quantity,
-        unitPrice: product.price, 
+        unitPrice: product.price,
         total: itemTotal,
       });
 
@@ -334,15 +334,100 @@ export const updateInvoiceStatus = async (req, res, next) => {
   }
 };
 export const updateInvoice = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { id } = req.params;
-    const updatedInvoice = await Invoice.findByIdAndUpdate(id, req.body, {
-      new: true,
+    const {
+      customerName,
+      customerPhone,
+      customerEmail,
+      customerICE,
+      items,
+      tax = 0,
+      discount = 0,
+      paymentMethod = "Espèces",
+      notes,
+    } = req.body;
+
+    const invoice = await Invoice.findById(id).session(session);
+    if (!invoice) return next(errorHandler(404, "الفاتورة غير موجودة"));
+
+    // إرجاع الكميات القديمة إلى المخزون
+    for (const oldItem of invoice.items) {
+      const product = await Product.findById(oldItem.product).session(session);
+      if (product) {
+        product.quantity += oldItem.quantity;
+        await product.save({ session });
+      }
+    }
+
+    let subtotal = 0;
+    const updatedItems = [];
+
+    // معالجة العناصر الجديدة
+    for (const item of items) {
+      const product = await Product.findById(item.productId).session(session);
+      if (!product)
+        return next(errorHandler(404, `المنتج غير موجود: ${item.productId}`));
+      if (product.quantity < item.quantity)
+        return next(
+          errorHandler(
+            400,
+            `الكمية غير كافية للمنتج: ${product.name}. المتاح: ${product.quantity}`
+          )
+        );
+
+      const itemTotal = item.quantity * product.price;
+      subtotal += itemTotal;
+
+      updatedItems.push({
+        product: product._id,
+        productCode: product.code,
+        productName: product.name,
+        quantity: item.quantity,
+        unitPrice: product.price,
+        total: itemTotal,
+      });
+
+      product.quantity -= item.quantity;
+      await product.save({ session });
+    }
+
+    const total = subtotal + tax - discount;
+
+    // تحديث الفاتورة
+    invoice.customerName = customerName;
+    invoice.customerPhone = customerPhone;
+    invoice.customerEmail = customerEmail;
+    invoice.customerICE = customerICE;
+    invoice.items = updatedItems;
+    invoice.subtotal = subtotal;
+    invoice.tax = tax;
+    invoice.discount = discount;
+    invoice.total = total;
+    invoice.paymentMethod = paymentMethod;
+    invoice.notes = notes;
+
+    const updatedInvoice = await invoice.save({ session });
+    await session.commitTransaction();
+    session.endSession();
+
+    // جلب البيانات المحدثة مع المنتجات
+    const populatedInvoice = await Invoice.findById(updatedInvoice._id)
+      .populate("items.product", "name code price")
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      message: "تم تحديث الفاتورة بنجاح",
+      data: populatedInvoice,
     });
-    if (!updatedInvoice) return next(errorHandler(404, "الفاتورة غير موجودة"));
-    res.status(200).json({ success: true, data: updatedInvoice });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
   }
 };
 

@@ -88,12 +88,32 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
           : `${API_URL}/api/invoices`;
         const method = invoice ? "PUT" : "POST";
 
+        // إضافة معلومات المنتج الكاملة عند التعديل
+        const itemsWithProductInfo = await Promise.all(
+          values.items.map(async (item) => {
+            const product = products.find((p) => p._id === item.productId);
+            return {
+              productId: item.productId,
+              quantity: item.quantity,
+              // إضافة المعلومات الإضافية للمنتج
+              productName: product?.name,
+              unitPrice: product?.price,
+              productCode: product?.code,
+            };
+          })
+        );
+
+        const payload = {
+          ...values,
+          items: itemsWithProductInfo,
+        };
+
         const response = await fetch(url, {
           method,
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(values),
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -251,7 +271,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
               </label>
               <div className="relative">
                 <input
-                  type="email"
+                  type="text"
                   name="customerEmail"
                   value={formik.values.customerEmail}
                   onChange={formik.handleChange}
