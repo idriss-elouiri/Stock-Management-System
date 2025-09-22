@@ -49,12 +49,10 @@ export const getProducts = async (req, res, next) => {
 
     let filter = {};
 
-    // فلترة حسب الفئة
     if (category) {
       filter.category = category;
     }
 
-    // بحث بالكود أو الاسم
     if (search) {
       filter.$or = [
         { code: { $regex: search, $options: "i" } },

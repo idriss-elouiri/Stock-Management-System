@@ -300,9 +300,8 @@ const Invoices = () => {
 
   <!-- Footer -->
 <div class="footer">
-  <p class="thanks">Merci pour votre confiance</p>
 
-  <p>N RUE 43 ETAGE 4 HAY TARIK SIDI BERNOUSSI CASABLANCA, Tél: +212 658569830</p>
+  <p>N RUE 43 ETAGE 4 HAY TARIK SIDI BERNOUSSI CASABLANCA</p>
   <p>RC N 661333, IF 66214735, PATENTE 2985974, CNSS 5936021</p>
   <p>ICE 003663464000088</p>
 

@@ -32,11 +32,22 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/products`);
-      if (response.ok) {
+      let allProducts = [];
+      let page = 1;
+      let hasNext = true;
+
+      while (hasNext) {
+        const response = await fetch(`${API_URL}/api/products?page=${page}`);
+        if (!response.ok) break;
+
         const data = await response.json();
-        setProducts(data.data);
+        allProducts = [...allProducts, ...data.data];
+
+        hasNext = data.pagination.hasNext;
+        page++;
       }
+
+      setProducts(allProducts);
     } catch (error) {
       console.error("Erreur lors du chargement des produits:", error);
     }
@@ -168,13 +179,12 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
 
   const { subtotal, total } = calculateTotals();
 
-const inputClass = (touched, error) =>
-  `w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 ${
-    touched && error
-      ? "border-red-500 bg-red-50"
-      : "border-gray-300 hover:border-indigo-300"
-  }`;
-
+  const inputClass = (touched, error) =>
+    `w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 ${
+      touched && error
+        ? "border-red-500 bg-red-50"
+        : "border-gray-300 hover:border-indigo-300"
+    }`;
 
   return (
     <>
