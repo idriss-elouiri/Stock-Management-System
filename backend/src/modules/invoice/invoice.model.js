@@ -19,7 +19,7 @@ const invoiceSchema = new mongoose.Schema(
     customerName: { type: String, required: true, trim: true },
     customerPhone: { type: String, trim: true },
     customerEmail: { type: String, trim: true, lowercase: true },
-    customerICE: { type: String, trim: true }, 
+    customerICE: { type: String, trim: true },
     items: [invoiceItemSchema],
     subtotal: { type: Number, required: true, min: 0 },
     tax: { type: Number, default: 0, min: 0 },
@@ -27,7 +27,14 @@ const invoiceSchema = new mongoose.Schema(
     total: { type: Number, required: true, min: 0 },
     paymentMethod: {
       type: String,
-      enum: ["Espèces", "Carte de crédit", "Virement bancaire", "Autre"],
+      enum: [
+        "Espèces",
+        "Carte de crédit",
+        "Virement bancaire",
+        "chèque",
+        "effet",
+        "Autre",
+      ],
       default: "Espèces",
     },
     status: {

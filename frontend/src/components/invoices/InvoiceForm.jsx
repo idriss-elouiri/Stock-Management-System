@@ -514,6 +514,8 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                 <option value="Espèces">Espèces</option>
                 <option value="Carte de crédit">Carte de crédit</option>
                 <option value="Virement bancaire">Virement bancaire</option>
+                <option value="chèque">chèque</option>
+                <option value="effet">effet</option>
                 <option value="Autre">Autre</option>
               </select>
             </div>
