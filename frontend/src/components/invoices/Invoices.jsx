@@ -110,7 +110,7 @@ const Invoices = () => {
     );
     const discountAmount = (subtotal * (invoice.discount || 0)) / 100;
     const ht = subtotal - discountAmount;
-    const taxRate = 0.2; // 20%
+    const taxRate = 0.2;
     const tax = ht * taxRate;
     const total = ht + tax;
     const totalEntier = Math.floor(total);
@@ -130,6 +130,20 @@ const Invoices = () => {
     <meta charset="UTF-8">
     <title>Facture ${invoice.invoiceNumber || "inconnu"}</title>
     <style>
+    @media print {
+  /* إخفاء أي عنصر ما بغيتوش يظهر */
+  .print-btn, 
+  .navbar, 
+  .sidebar {
+    display: none !important;
+  }
+
+  /* نخلي الفاتورة تستغل كامل الصفحة */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
       body { 
         font-family: Arial, sans-serif; 
         padding: 10px 20px; 
@@ -137,15 +151,19 @@ const Invoices = () => {
         font-size: 11px;
       }
       .header {
-        display: flex;
-        justify-content: space-between;
         margin-bottom: 10px;
       }
-      .logo { max-height: 80px; }
+      .logo { 
+        max-height: 140px; 
+        display: block; 
+        margin: 0 auto 10px auto; 
+      }
       .facture-info {
         border: 1px solid #000;
-        padding: 5px 10px;
+        padding: 5px 12px;
         font-size: 11px;
+        width: fit-content;
+        margin-left: auto; /* يخليها تمشي لليمين */
       }
       .box {
         border: 1px solid #000;
@@ -197,11 +215,31 @@ const Invoices = () => {
         font-size: 11px;
         font-style: italic;
       }
+      .footer {
+        margin-top:15px; 
+        text-align:center; 
+        font-size: 10px;
+      }
+      .footer p { margin: 2px 0; }
+      .print-btn {
+        margin-top: 12px;
+        padding: 8px 16px;
+        font-size: 12px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .print-btn:hover {
+        background: #1e40af;
+      }
     </style>
   </head>
   <body>
     <div class="header">
-      <div><img src="${logoPath}" alt="Logo" class="logo"></div>
+      <img src="${logoPath}" alt="Logo" class="logo">
       <div class="facture-info">
         <p><strong>FACTURE N°:</strong> ${
           invoice.invoiceNumber || "inconnu"
@@ -220,12 +258,6 @@ const Invoices = () => {
       <div class="box client-info" style="flex:1;">
         <strong>CLIENT:</strong><br>
         <p>Nom: ${invoice.customerName || "inconnu"}</p>
-        <p>Adress: ${invoice.customerEmail || "inconnu"}</p>
-        ${
-          invoice.customerPhone
-            ? `<p>Téléphone: ${invoice.customerPhone}</p>`
-            : ""
-        }
         ${invoice.customerICE ? `<p>ICE: ${invoice.customerICE}</p>` : ""}
       </div>
     </div>
@@ -276,12 +308,14 @@ const Invoices = () => {
       <div><span>T.V.A:</span><span>${formatPrice(tax)}</span></div>
       <div><span>NET À PAYER:</span><span>${formatPrice(total)}</span></div>
     </div>
-    <div class="footer" style="margin-top:15px; text-align:center;">
-  <button class="print-btn" onclick="window.print()" 
-    style="margin-top:10px; padding:6px 14px; font-size:11px; background:#4f46e5; color:white; border:none; border-radius:5px; cursor:pointer;">
-    🖨️ Imprimer la facture
-  </button>
-</div>
+
+    <div class="footer">
+      <hr style="margin:10px 0; border:none; border-top:1px solid #000;">
+      <p><strong>Adresse:</strong> N RUE 43 ETAGE 4 HAY TARIK SIDI BERNOUSSI CASABLANCA</p>
+      <p>RC N° 661333 | IF 66214735 | PATENTE 2985974 | CNSS 5936021</p>
+      <p><strong>ICE:</strong> 003663464000088</p>
+      <button class="print-btn" onclick="window.print()">🖨️ Imprimer la facture</button>
+    </div>
 
   </body>
   </html>
