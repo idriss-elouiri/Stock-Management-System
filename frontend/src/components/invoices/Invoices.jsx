@@ -151,20 +151,21 @@ const Invoices = () => {
         font-size: 11px;
       }
       .header {
-        margin-bottom: 10px;
-      }
-      .logo { 
-        max-height: 140px; 
-        display: block; 
-        margin: 0 auto 10px auto; 
-      }
-      .facture-info {
-        border: 1px solid #000;
-        padding: 5px 12px;
-        font-size: 11px;
-        width: fit-content;
-        margin-left: auto; /* يخليها تمشي لليمين */
-      }
+    display: flex;
+    justify-content: space-between; /* يخلي العناصر بعاد */
+    align-items: center; /* يخليهم فخط واحد عمودياً */
+    margin-bottom: 10px;
+  }
+  .logo {
+    max-height: 280px; /* نقص الحجم باش يبان مناسب */
+    margin: 0; /* نشيل auto اللي كانت كاتخليه فالوسط */
+  }
+  .facture-info {
+    border: 1px solid #000;
+    padding: 5px 12px;
+    font-size: 11px;
+    width: fit-content;
+  }
       .box {
         border: 1px solid #000;
         padding: 5px 10px;
