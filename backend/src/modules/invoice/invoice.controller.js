@@ -13,7 +13,8 @@ export const createInvoice = async (req, res, next) => {
       customerName,
       customerPhone,
       customerEmail,
-      customerICE, // ← أضف هذا السطر
+      customerICE,
+      dateCreation, // ← أضف هذا السطر
       items,
       tax = 0,
       discount = 0,
@@ -62,7 +63,8 @@ export const createInvoice = async (req, res, next) => {
       customerName,
       customerPhone,
       customerEmail,
-      customerICE, // ← أضف هنا أيضاً
+      customerICE,
+      dateCreation, 
       items: invoiceItems,
       subtotal,
       tax,
@@ -344,6 +346,7 @@ export const updateInvoice = async (req, res, next) => {
       customerPhone,
       customerEmail,
       customerICE,
+      dateCreation,
       items,
       tax = 0,
       discount = 0,
@@ -402,6 +405,7 @@ export const updateInvoice = async (req, res, next) => {
     invoice.customerPhone = customerPhone;
     invoice.customerEmail = customerEmail;
     invoice.customerICE = customerICE;
+    invoice.dateCreation = dateCreation;
     invoice.items = updatedItems;
     invoice.subtotal = subtotal;
     invoice.tax = tax;

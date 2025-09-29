@@ -17,7 +17,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaFilter,
-  FaBox
+  FaBox,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 
@@ -31,22 +31,80 @@ const ProductsTable = ({
   searchTerm,
   onSearchChange,
   filterLowStock,
-  onFilterLowStockChange
+  onFilterLowStockChange,
 }) => {
   const [categoryFilter, setCategoryFilter] = useState("");
 
+  const handlePrintProducts = () => {
+    const printWindow = window.open("", "_blank");
+    const content = `
+    <html>
+      <head>
+        <title>Liste des Produits</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; font-size: 12px; }
+          h1 { text-align: center; margin-bottom: 15px; font-size: 16px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+          th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+          th { background-color: #f4f4f4; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <h1>Liste des Produits</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Nom</th>
+              <th>Catégorie</th>
+              <th>Prix Achat</th>
+              <th>Prix Vente</th>
+              <th>Quantité</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredData
+              .map(
+                (p) => `
+              <tr>
+                <td>${p.code}</td>
+                <td>${p.name}</td>
+                <td>${p.category || "---"}</td>
+                <td>${
+                  p.purchasePrice ? formatPrice(p.purchasePrice) : "---"
+                }</td>
+                <td>${formatPrice(p.price)}</td>
+                <td>${p.quantity}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+    printWindow.document.write(content);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   const handleDeleteClick = (id, name) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le produit "${name}" ?`)) {
+    if (
+      window.confirm(
+        `Êtes-vous sûr de vouloir supprimer le produit "${name}" ?`
+      )
+    ) {
       onDelete(id);
     }
   };
 
   // دالة لتنسيق السعر كدرهم مغربي
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("fr-MA", {
+      style: "currency",
+      currency: "MAD",
+      minimumFractionDigits: 2,
     }).format(price);
   };
 
@@ -74,6 +132,21 @@ const ProductsTable = ({
         cell: ({ getValue }) => getValue() || "---",
       },
       {
+        id: "purchasePrice",
+        header: "PRIX D'ACHAT",
+        accessorKey: "purchasePrice",
+        cell: ({ getValue }) => {
+          const value = getValue();
+          return value ? (
+            <span className="font-medium text-green-700">
+              {formatPrice(value)}
+            </span>
+          ) : (
+            "---"
+          ); // 👈 إذا ماكانش، ما يبان والو
+        },
+      },
+      {
         id: "price",
         header: "Prix (MAD)",
         accessorKey: "price",
@@ -91,13 +164,15 @@ const ProductsTable = ({
           const quantity = row.original.quantity;
           const minStockLevel = row.original.minStockLevel || 0;
           const isLowStock = quantity <= minStockLevel;
-          
+
           return (
-            <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-              isLowStock 
-                ? "bg-red-100 text-red-800" 
-                : "bg-green-100 text-green-800"
-            }`}>
+            <span
+              className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                isLowStock
+                  ? "bg-red-100 text-red-800"
+                  : "bg-green-100 text-green-800"
+              }`}
+            >
               {quantity} {isLowStock && "⚠️"}
             </span>
           );
@@ -126,7 +201,9 @@ const ProductsTable = ({
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => handleDeleteClick(row.original._id, row.original.name)}
+              onClick={() =>
+                handleDeleteClick(row.original._id, row.original.name)
+              }
               className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
               title="Supprimer"
             >
@@ -142,7 +219,7 @@ const ProductsTable = ({
   // استخراج الفئات الفريدة من البيانات
   const uniqueCategories = useMemo(() => {
     const categories = new Set();
-    data.forEach(product => {
+    data.forEach((product) => {
       if (product.category) {
         categories.add(product.category);
       }
@@ -153,19 +230,19 @@ const ProductsTable = ({
   // تطبيق الفلترة حسب الفئة
   const filteredData = useMemo(() => {
     let result = data;
-    
+
     if (categoryFilter) {
-      result = result.filter(product => 
-        product.category && product.category === categoryFilter
+      result = result.filter(
+        (product) => product.category && product.category === categoryFilter
       );
     }
-    
+
     if (filterLowStock) {
-      result = result.filter(product => 
-        product.quantity <= (product.minStockLevel || 0)
+      result = result.filter(
+        (product) => product.quantity <= (product.minStockLevel || 0)
       );
     }
-    
+
     return result;
   }, [data, categoryFilter, filterLowStock]);
 
@@ -210,6 +287,14 @@ const ProductsTable = ({
             >
               <FaSync className="ml-2" /> Actualiser
             </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handlePrintProducts}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl flex items-center font-medium shadow-md hover:shadow-lg transition-shadow"
+            >
+              🖨️ Imprimer
+            </motion.button>
           </div>
         </div>
       </div>
@@ -227,7 +312,7 @@ const ProductsTable = ({
               className="pl-4 pr-10 py-3 border border-gray-300 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
             />
           </div>
-          
+
           <div className="relative">
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <FaFilter className="text-gray-400" />
@@ -238,14 +323,14 @@ const ProductsTable = ({
               className="pl-4 pr-10 py-3 border border-gray-300 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all appearance-none"
             >
               <option value="">Toutes les catégories</option>
-              {uniqueCategories.map(category => (
+              {uniqueCategories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
               ))}
             </select>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"

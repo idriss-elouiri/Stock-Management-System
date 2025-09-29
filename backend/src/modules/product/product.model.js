@@ -13,6 +13,10 @@ const productSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  purchasePrice: {
+    type: Number,
+    min: 0
+  },
   price: {
     type: Number,
     required: true,

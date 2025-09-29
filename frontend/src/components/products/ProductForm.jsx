@@ -21,6 +21,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     initialValues: {
       code: product?.code || "",
       name: product?.name || "",
+      purchasePrice: product?.purchasePrice || 0,
       price: product?.price || 0,
       quantity: product?.quantity || 0,
       category: product?.category || "",
@@ -45,7 +46,9 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Échec de l'enregistrement du produit");
+          throw new Error(
+            errorData.message || "Échec de l'enregistrement du produit"
+          );
         }
 
         onSuccess();
@@ -57,13 +60,12 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     },
   });
 
-const inputClass = (touched, error) =>
-  `w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 ${
-    touched && error
-      ? "border-red-500 bg-red-50"
-      : "border-gray-300 hover:border-indigo-300"
-  }`;
-
+  const inputClass = (touched, error) =>
+    `w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 ${
+      touched && error
+        ? "border-red-500 bg-red-50"
+        : "border-gray-300 hover:border-indigo-300"
+    }`;
 
   const sectionClass =
     "space-y-4 p-5 bg-white rounded-xl shadow-sm border border-gray-100";
@@ -72,10 +74,10 @@ const inputClass = (touched, error) =>
 
   // دالة لتنسيق السعر كدرهم مغربي
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("fr-MA", {
+      style: "currency",
+      currency: "MAD",
+      minimumFractionDigits: 2,
     }).format(price);
   };
 
@@ -162,10 +164,42 @@ const inputClass = (touched, error) =>
         {/* Informations financières et stock */}
         <div className={sectionClass}>
           <h3 className={sectionHeaderClass}>
-            <FaDollarSign className="ml-2 text-indigo-500" /> Informations financières et stock
+            <FaDollarSign className="ml-2 text-indigo-500" /> Informations
+            financières et stock
           </h3>
 
-          {/* Prix */}
+          {/* Prix D'ACHAT */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              PRIX D'ACHAT *
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                name="purchasePrice"
+                value={formik.values.purchasePrice}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                className={inputClass(
+                  formik.touched.purchasePrice,
+                  formik.errors.purchasePrice
+                )}
+                placeholder="Entrez le prix d'achat"
+                step="0.01"
+                min="0"
+              />
+            </div>
+            {formik.touched.purchasePrice && formik.errors.purchasePrice && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <FaInfoCircle className="ml-1" /> {formik.errors.purchasePrice}
+              </p>
+            )}
+            {formik.values.purchasePrice > 0 && (
+              <p className="mt-1 text-sm text-green-600">
+                {formatPrice(formik.values.purchasePrice)}
+              </p>
+            )}
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Prix (MAD) *
@@ -177,12 +211,14 @@ const inputClass = (touched, error) =>
                 value={formik.values.price}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                className={inputClass(formik.touched.price, formik.errors.price)}
+                className={inputClass(
+                  formik.touched.price,
+                  formik.errors.price
+                )}
                 placeholder="Entrez le prix du produit"
                 step="0.01"
                 min="0"
               />
-              <span className="absolute left-3 top-3.5 text-gray-400">MAD</span>
             </div>
             {formik.touched.price && formik.errors.price && (
               <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -240,13 +276,11 @@ const inputClass = (touched, error) =>
               placeholder="Seuil minimum d'alerte"
               min="0"
             />
-            {formik.touched.minStockLevel &&
-              formik.errors.minStockLevel && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
-                  <FaInfoCircle className="ml-1" />{" "}
-                  {formik.errors.minStockLevel}
-                </p>
-              )}
+            {formik.touched.minStockLevel && formik.errors.minStockLevel && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <FaInfoCircle className="ml-1" /> {formik.errors.minStockLevel}
+              </p>
+            )}
           </div>
         </div>
       </div>

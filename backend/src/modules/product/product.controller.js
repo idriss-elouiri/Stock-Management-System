@@ -7,6 +7,7 @@ export const createProduct = async (req, res, next) => {
     const {
       code,
       name,
+      purchasePrice,
       price,
       quantity,
       description,
@@ -23,6 +24,7 @@ export const createProduct = async (req, res, next) => {
     const product = new Product({
       code: code.toUpperCase(),
       name,
+      purchasePrice,
       price,
       quantity: quantity || 0,
       description,

@@ -12,6 +12,7 @@ import {
   FaPhone,
   FaEnvelope,
   FaIdCard,
+  FaDailymotion,
 } from "react-icons/fa";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
@@ -67,6 +68,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
       customerPhone: invoice?.customerPhone || "",
       customerEmail: invoice?.customerEmail || "",
       customerICE: invoice?.customerICE || "", // صححت هذا السطر
+      dateCreation: invoice?.dateCreation || "",
       items:
         invoice?.items?.map((item) => ({
           productId: item.product?._id || item.product,
@@ -314,6 +316,30 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
               {formik.touched.customerICE && formik.errors.customerICE && (
                 <p className="text-red-500 text-sm mt-1">
                   {formik.errors.customerICE}
+                </p>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date de Creation
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  name="dateCreation"
+                  value={formik.values.dateCreation}
+                  onChange={formik.handleChange}
+                  className={inputClass(
+                    formik.touched.dateCreation,
+                    formik.errors.dateCreation
+                  )}
+                  placeholder="Entrez le date de Creation"
+                />
+                <FaDailymotion className="absolute left-3 top-3.5 text-gray-400" />
+              </div>
+              {formik.touched.dateCreation && formik.errors.dateCreation && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formik.errors.dateCreation}
                 </p>
               )}
             </div>

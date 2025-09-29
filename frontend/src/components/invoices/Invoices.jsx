@@ -157,7 +157,7 @@ const Invoices = () => {
     margin-bottom: 10px;
   }
   .logo {
-    max-height: 280px; /* نقص الحجم باش يبان مناسب */
+    max-height: 350px; /* نقص الحجم باش يبان مناسب */
     margin: 0; /* نشيل auto اللي كانت كاتخليه فالوسط */
   }
   .facture-info {
@@ -246,7 +246,7 @@ const Invoices = () => {
           invoice.invoiceNumber || "inconnu"
         }</p>
         <p><strong>Date:</strong> ${new Date(
-          invoice.createdAt
+          invoice.dateCreation || invoice.createdAt
         ).toLocaleDateString("fr-FR")}</p>
       </div>
     </div>
