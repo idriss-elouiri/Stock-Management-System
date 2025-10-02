@@ -28,7 +28,6 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
       formik.resetForm();
     }
   }, [invoice]);
-
   const fetchProducts = async () => {
     try {
       let allProducts = [];
@@ -73,6 +72,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
         invoice?.items?.map((item) => ({
           productId: item.product?._id || item.product,
           quantity: item.quantity,
+          remise: item.remise || 0, // 👈 خصم لكل منتج
         })) || [],
       tax: invoice?.tax || 0,
       discount: invoice?.discount || 0,
@@ -152,6 +152,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
           {
             productId: selectedProduct._id,
             quantity: 1,
+            remise: 0, // 👈 نبدأ بدون خصم
           },
         ]);
       }
@@ -184,30 +185,44 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
 
   const calculateTotals = () => {
     let subtotal = 0;
+    let totalDiscountItems = 0;
+
+    const globalRemiseRate = parseFloat(formik.values.discount) || 0;
 
     formik.values.items.forEach((item) => {
       const product = products.find((p) => p._id === item.productId);
       if (product) {
-        subtotal += item.quantity * product.price;
+        const lineSubtotal = item.quantity * product.price;
+        subtotal += lineSubtotal;
+
+        if (item.remise !== "" && !isNaN(item.remise)) {
+          // remise خاصة بالمنتج
+          const itemDiscount = (lineSubtotal * parseFloat(item.remise)) / 100;
+          totalDiscountItems += itemDiscount;
+        }
       }
     });
 
-    // خصم كنسبة مئوية (%)
-    const discountRate = parseFloat(formik.values.discount) || 0;
-    const discountAmount = (subtotal * discountRate) / 100;
-    const ht = subtotal - discountAmount;
+    // remise générale تطبق على المجموع إلا إذا كان عند المنتج remise خاص
+    const globalRemiseAmount =
+      ((subtotal - totalDiscountItems) * globalRemiseRate) / 100;
 
-    // الضريبة (TVA) كنسبة مئوية (%)
+    const totalDiscount = totalDiscountItems + globalRemiseAmount;
+
+    // montant HT après toutes les remises
+    const ht = subtotal - totalDiscount;
+
+    // الضريبة (TVA) على المبلغ بعد الخصومات
     const taxRate = parseFloat(formik.values.tax) || 0;
     const taxAmount = (ht * taxRate) / 100;
 
     // Net à Payer
     const total = ht + taxAmount;
 
-    return { subtotal, discountAmount, taxAmount, total };
+    return { subtotal, totalDiscount, taxAmount, total };
   };
 
-  const { subtotal, total } = calculateTotals();
+  const { subtotal, totalDiscount, taxAmount, total } = calculateTotals();
 
   const inputClass = (touched, error) =>
     `w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 ${
@@ -408,6 +423,7 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase">
                       Quantité
                     </th>
+                    <th>Remise (%)</th>
                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase">
                       Total
                     </th>
@@ -423,7 +439,11 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                     );
                     if (!product) return null;
 
-                    const itemTotal = item.quantity * product.price;
+                    // تطبيق الخصم على مستوى المنتج
+                    const remiseRate = parseFloat(item.remise) || 0;
+                    const itemSubtotal = item.quantity * product.price;
+                    const itemDiscount = (itemSubtotal * remiseRate) / 100;
+                    const itemTotal = itemSubtotal - itemDiscount;
 
                     return (
                       <tr key={index}>
@@ -455,6 +475,20 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
                             </button>
                           </div>
                         </td>
+                        <td>
+                          <input
+                            type="number"
+                            value={item.remise}
+                            min="0"
+                            max="100"
+                            onChange={(e) => {
+                              const newItems = [...formik.values.items];
+                              newItems[index].remise = e.target.value;
+                              formik.setFieldValue("items", newItems);
+                            }}
+                            className="w-20 p-1 border border-gray-300 rounded text-right"
+                          />
+                        </td>
                         <td className="px-4 py-3 font-medium">
                           {formatPrice(itemTotal)}
                         </td>
@@ -483,42 +517,40 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
               Calculs
             </h3>
 
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span>Sous-total:</span>
-                <span className="font-medium">{formatPrice(subtotal)}</span>
-              </div>
+            <div className="flex justify-between">
+              <span>Sous-total:</span>
+              <span className="font-medium">{formatPrice(subtotal)}</span>
+            </div>
 
-              <div className="flex justify-between">
-                <span>Remise (%):</span>
-                <input
-                  type="number"
-                  name="discount"
-                  value={formik.values.discount}
-                  onChange={formik.handleChange}
-                  className="w-20 p-1 border border-gray-300 rounded text-right"
-                  min="0"
-                  max="100"
-                />
-              </div>
+            <div className="flex justify-between">
+              <span>Remise générale (%):</span>
+              <input
+                type="number"
+                name="discount"
+                value={formik.values.discount}
+                onChange={formik.handleChange}
+                className="w-20 p-1 border border-gray-300 rounded text-right"
+                min="0"
+                max="100"
+              />
+            </div>
 
-              <div className="flex justify-between">
-                <span>Taxe (%):</span>
-                <input
-                  type="number"
-                  name="tax"
-                  value={formik.values.tax}
-                  onChange={formik.handleChange}
-                  className="w-20 p-1 border border-gray-300 rounded text-right"
-                  min="0"
-                  max="100"
-                />
-              </div>
+            <div className="flex justify-between">
+              <span>Taxe (%):</span>
+              <input
+                type="number"
+                name="tax"
+                value={formik.values.tax}
+                onChange={formik.handleChange}
+                className="w-20 p-1 border border-gray-300 rounded text-right"
+                min="0"
+                max="100"
+              />
+            </div>
 
-              <div className="flex justify-between border-t border-gray-200 pt-2 font-bold text-lg">
-                <span>Net à Payer:</span>
-                <span className="text-green-700">{formatPrice(total)}</span>
-              </div>
+            <div className="flex justify-between border-t border-gray-200 pt-2 font-bold text-lg">
+              <span>Net à Payer:</span>
+              <span className="text-green-700">{formatPrice(total)}</span>
             </div>
           </div>
 

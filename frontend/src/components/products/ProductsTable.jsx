@@ -57,7 +57,6 @@ const ProductsTable = ({
               <th>Code</th>
               <th>Nom</th>
               <th>Catégorie</th>
-              <th>Prix Achat</th>
               <th>Prix Vente</th>
               <th>Quantité</th>
             </tr>
@@ -70,9 +69,7 @@ const ProductsTable = ({
                 <td>${p.code}</td>
                 <td>${p.name}</td>
                 <td>${p.category || "---"}</td>
-                <td>${
-                  p.purchasePrice ? formatPrice(p.purchasePrice) : "---"
-                }</td>
+              
                 <td>${formatPrice(p.price)}</td>
                 <td>${p.quantity}</td>
               </tr>
