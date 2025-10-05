@@ -207,3 +207,34 @@ export const updateProductQuantity = async (req, res, next) => {
     next(error);
   }
 };
+
+
+// جلب جميع السلع بدون ترقيم
+export const getAllProducts = async (req, res, next) => {
+  try {
+    const { category, search } = req.query;
+
+    let filter = {};
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (search) {
+      filter.$or = [
+        { code: { $regex: search, $options: "i" } },
+        { name: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const products = await Product.find(filter).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: products,
+      total: products.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

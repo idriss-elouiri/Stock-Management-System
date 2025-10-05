@@ -19,7 +19,7 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/products`);
+      const response = await fetch(`${API_URL}/api/products/all`);
       if (!response.ok) throw new Error("Échec de la récupération des données");
       const data = await response.json();
       setProducts(data.data);

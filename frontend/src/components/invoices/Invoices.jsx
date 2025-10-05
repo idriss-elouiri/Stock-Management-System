@@ -110,10 +110,20 @@ const Invoices = () => {
       return sum + (itemTotal - itemDiscount);
     }, 0);
     const discountAmount = (subtotal * (invoice.discount || 0)) / 100;
-    const ht = subtotal - discountAmount;
-    const taxRate = 0.2;
-    const tax = ht * taxRate;
-    const total = ht + tax;
+
+    // ✅ السعر الإجمالي بعد الخصومات (TTC)
+    const totalTTC = subtotal - discountAmount;
+
+    // ✅ حساب السعر بدون الضريبة (H.T)
+    const taxRate = 0.2; // 20%
+    const ht = totalTTC / (1 + taxRate);
+
+    // ✅ حساب الضريبة (TVA)
+    const tax = totalTTC - ht;
+
+    // ✅ المبلغ الواجب دفعه (Net à payer)
+    const total = totalTTC;
+
     const totalEntier = Math.floor(total);
     const totalDecimal = Math.round((total - totalEntier) * 100);
 

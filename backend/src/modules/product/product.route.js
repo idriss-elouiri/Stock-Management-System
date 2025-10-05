@@ -5,7 +5,8 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
-  updateProductQuantity
+  updateProductQuantity,
+  getAllProducts,
 } from "./product.controller.js";
 
 const router = express.Router();
@@ -15,6 +16,8 @@ router.post("/", createProduct);
 
 // GET /api/products - جلب جميع السلع
 router.get("/", getProducts);
+
+router.get("/all", getAllProducts);
 
 // GET /api/products/:id - جلب سلعة بواسطة ID
 router.get("/:id", getProductById);
