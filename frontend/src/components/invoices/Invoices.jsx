@@ -104,10 +104,11 @@ const Invoices = () => {
     const logoPath = logo.src;
     const items = invoice.items || [];
 
-    const subtotal = items.reduce(
-      (sum, item) => sum + item.unitPrice * item.quantity,
-      0
-    );
+    const subtotal = items.reduce((sum, item) => {
+      const itemTotal = item.unitPrice * item.quantity;
+      const itemDiscount = (itemTotal * (item.remise || 0)) / 100;
+      return sum + (itemTotal - itemDiscount);
+    }, 0);
     const discountAmount = (subtotal * (invoice.discount || 0)) / 100;
     const ht = subtotal - discountAmount;
     const taxRate = 0.2;
@@ -275,25 +276,24 @@ const Invoices = () => {
         </tr>
       </thead>
       <tbody>
-        ${items
-          .map((item) => {
-            const reference = item.productCode || item.product?.code || "-";
-            const discountRate =
-              item.discountRate !== undefined
-                ? item.discountRate
-                : invoice.discount || 0;
-            const amount = item.unitPrice * item.quantity;
-            const discounted = amount - (amount * discountRate) / 100;
-            return `<tr>
-            <td>${reference}</td>
-            <td>${item.productName || "Produit inconnu"}</td>
-            <td>${item.quantity || 0}</td>
-            <td>${formatPrice(item.unitPrice)}</td>
-            <td>${discountRate}%</td>
-            <td>${formatPrice(discounted)}</td>
-          </tr>`;
-          })
-          .join("")}
+      ${items
+        .map((item) => {
+          const reference = item.productCode || item.product?.code || "-";
+          const itemTotal = item.unitPrice * item.quantity;
+          const discountRate = item.remise || 0; // 👈 استخدم remise الخاص بالمنتج
+          const discountAmount = (itemTotal * discountRate) / 100;
+          const netTotal = itemTotal - discountAmount;
+
+          return `<tr>
+      <td>${reference}</td>
+      <td>${item.productName || "Produit inconnu"}</td>
+      <td>${item.quantity || 0}</td>
+      <td>${formatPrice(item.unitPrice)}</td>
+      <td>${discountRate}%</td>
+      <td>${formatPrice(netTotal)}</td>
+    </tr>`;
+        })
+        .join("")}
       </tbody>
     </table>
 

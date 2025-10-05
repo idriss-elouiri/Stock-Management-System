@@ -14,11 +14,11 @@ export const createInvoice = async (req, res, next) => {
       customerPhone,
       customerEmail,
       customerICE,
-      dateCreation, // ← أضف هذا السطر
+      dateCreation,
       items,
       tax = 0,
       discount = 0,
-      paymentMethod = "نقدي",
+      paymentMethod = "Espèces",
       notes,
     } = req.body;
 
@@ -41,8 +41,13 @@ export const createInvoice = async (req, res, next) => {
           )
         );
 
+      // حساب الخصم لكل منتج
       const itemTotal = item.quantity * product.price;
-      subtotal += itemTotal;
+      const itemRemise = parseFloat(item.remise) || 0;
+      const itemDiscountAmount = (itemTotal * itemRemise) / 100;
+      const itemNetTotal = itemTotal - itemDiscountAmount;
+
+      subtotal += itemNetTotal;
 
       invoiceItems.push({
         product: product._id,
@@ -50,21 +55,30 @@ export const createInvoice = async (req, res, next) => {
         productName: product.name,
         quantity: item.quantity,
         unitPrice: product.price,
-        total: itemTotal,
+        remise: itemRemise, // 👈 تخزين نسبة الخصم
+        discountAmount: itemDiscountAmount, // 👈 تخزين مبلغ الخصم
+        total: itemNetTotal, // 👈 تخزين الإجمالي بعد الخصم
       });
 
+      // تحديث المخزون
       product.quantity -= item.quantity;
       await product.save({ session });
     }
 
-    const total = subtotal + tax - discount;
+    // حساب الخصم العام على الفاتورة
+    const globalDiscountAmount = (subtotal * discount) / 100;
+    const ht = subtotal - globalDiscountAmount;
+
+    // حساب الضريبة
+    const taxAmount = (ht * tax) / 100;
+    const total = ht + taxAmount;
 
     const invoice = new Invoice({
       customerName,
       customerPhone,
       customerEmail,
       customerICE,
-      dateCreation, 
+      dateCreation,
       items: invoiceItems,
       subtotal,
       tax,
@@ -91,6 +105,8 @@ export const createInvoice = async (req, res, next) => {
         ...item,
         productName: item.product ? item.product.name : item.productName,
         unitPrice: item.product ? item.product.price : item.unitPrice,
+        remise: item.remise || 0, // 👈 تضمين الخصم في الاستجابة
+        discountAmount: item.discountAmount || 0,
         total: item.total,
       })),
     };
@@ -335,6 +351,8 @@ export const updateInvoiceStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+// تحديث فاتورة موجودة
 export const updateInvoice = async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -369,7 +387,7 @@ export const updateInvoice = async (req, res, next) => {
     let subtotal = 0;
     const updatedItems = [];
 
-    // معالجة العناصر الجديدة
+    // معالجة العناصر الجديدة مع الخصم
     for (const item of items) {
       const product = await Product.findById(item.productId).session(session);
       if (!product)
@@ -382,8 +400,13 @@ export const updateInvoice = async (req, res, next) => {
           )
         );
 
+      // حساب الخصم لكل منتج
       const itemTotal = item.quantity * product.price;
-      subtotal += itemTotal;
+      const itemRemise = parseFloat(item.remise) || 0;
+      const itemDiscountAmount = (itemTotal * itemRemise) / 100;
+      const itemNetTotal = itemTotal - itemDiscountAmount;
+
+      subtotal += itemNetTotal;
 
       updatedItems.push({
         product: product._id,
@@ -391,14 +414,23 @@ export const updateInvoice = async (req, res, next) => {
         productName: product.name,
         quantity: item.quantity,
         unitPrice: product.price,
-        total: itemTotal,
+        remise: itemRemise, // 👈 تخزين نسبة الخصم
+        discountAmount: itemDiscountAmount, // 👈 تخزين مبلغ الخصم
+        total: itemNetTotal, // 👈 تخزين الإجمالي بعد الخصم
       });
 
+      // تحديث المخزون
       product.quantity -= item.quantity;
       await product.save({ session });
     }
 
-    const total = subtotal + tax - discount;
+    // حساب الخصم العام على الفاتورة
+    const globalDiscountAmount = (subtotal * discount) / 100;
+    const ht = subtotal - globalDiscountAmount;
+
+    // حساب الضريبة
+    const taxAmount = (ht * tax) / 100;
+    const total = ht + taxAmount;
 
     // تحديث الفاتورة
     invoice.customerName = customerName;
@@ -423,10 +455,23 @@ export const updateInvoice = async (req, res, next) => {
       .populate("items.product", "name code price")
       .lean();
 
+    // تنسيق البيانات للاستجابة
+    const formattedInvoice = {
+      ...populatedInvoice,
+      items: populatedInvoice.items.map((item) => ({
+        ...item,
+        productName: item.product ? item.product.name : item.productName,
+        unitPrice: item.product ? item.product.price : item.unitPrice,
+        remise: item.remise || 0, // 👈 تضمين الخصم في الاستجابة
+        discountAmount: item.discountAmount || 0,
+        total: item.total,
+      })),
+    };
+
     res.status(200).json({
       success: true,
       message: "تم تحديث الفاتورة بنجاح",
-      data: populatedInvoice,
+      data: formattedInvoice,
     });
   } catch (error) {
     await session.abortTransaction();

@@ -88,14 +88,14 @@ const InvoiceForm = ({ invoice, onSuccess, onCancel }) => {
           : `${API_URL}/api/invoices`;
         const method = invoice ? "PUT" : "POST";
 
-        // إضافة معلومات المنتج الكاملة عند التعديل
+        // في دالة onSubmit - أصلح هذا الجزء
         const itemsWithProductInfo = await Promise.all(
           values.items.map(async (item) => {
             const product = products.find((p) => p._id === item.productId);
             return {
               productId: item.productId,
               quantity: item.quantity,
-              // إضافة المعلومات الإضافية للمنتج
+              remise: item.remise || 0, // 👈 أضف هذا السطر
               productName: product?.name,
               unitPrice: product?.price,
               productCode: product?.code,
