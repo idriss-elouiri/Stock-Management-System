@@ -60,7 +60,6 @@ const Products = () => {
     );
   };
 
-  // Filtrer les produits par recherche et stock faible
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
