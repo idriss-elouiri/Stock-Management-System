@@ -93,22 +93,18 @@ const InvoicesTable = ({
           const invoice = row.original;
           const items = invoice.items || [];
 
-          // حساب subtotal
           const subtotal = items.reduce(
             (sum, item) => sum + item.unitPrice * item.quantity,
             0
           );
 
-          // الخصم
           const discountRate = invoice.discount || 0;
           const discountAmount = (subtotal * discountRate) / 100;
           const ht = subtotal - discountAmount;
 
-          // الضريبة 20%
           const taxRate = 0.2;
           const tax = ht * taxRate;
 
-          // Net à payer
           const total = ht + tax;
 
           return (
