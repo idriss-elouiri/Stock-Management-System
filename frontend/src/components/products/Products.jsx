@@ -14,7 +14,7 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterLowStock, setFilterLowStock] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const fetchProducts = async () => {
     try {
