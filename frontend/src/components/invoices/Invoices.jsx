@@ -323,7 +323,7 @@ const Invoices = () => {
     <div class="footer">
       <hr style="margin:10px 0; border:none; border-top:1px solid #000;">
       <p><strong>Adresse:</strong> N RUE 43 ETAGE 4 HAY TARIK SIDI BERNOUSSI CASABLANCA</p>
-      <p>RC N° 661333 | IF 66214735 | PATENTE 2985974 | CNSS 5936021</p>
+      <p>RC N° 661333 | IF 66214735 </p>
       <p><strong>ICE:</strong> 003663464000088</p>
       <button class="print-btn" onclick="window.print()">🖨️ Imprimer la facture</button>
     </div>
