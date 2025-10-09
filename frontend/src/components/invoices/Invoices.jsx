@@ -109,19 +109,12 @@ const Invoices = () => {
       const itemDiscount = (itemTotal * (item.remise || 0)) / 100;
       return sum + (itemTotal - itemDiscount);
     }, 0);
+
     const discountAmount = (subtotal * (invoice.discount || 0)) / 100;
-
-    // ✅ السعر الإجمالي بعد الخصومات (TTC)
     const totalTTC = subtotal - discountAmount;
-
-    // ✅ حساب السعر بدون الضريبة (H.T)
-    const taxRate = 0.2; // 20%
+    const taxRate = 0.2;
     const ht = totalTTC / (1 + taxRate);
-
-    // ✅ حساب الضريبة (TVA)
     const tax = totalTTC - ht;
-
-    // ✅ المبلغ الواجب دفعه (Net à payer)
     const total = totalTTC;
 
     const totalEntier = Math.floor(total);
@@ -141,117 +134,99 @@ const Invoices = () => {
     <meta charset="UTF-8">
     <title>Facture ${invoice.invoiceNumber || "inconnu"}</title>
     <style>
-    @media print {
-  /* إخفاء أي عنصر ما بغيتوش يظهر */
-  .print-btn, 
-  .navbar, 
-  .sidebar {
-    display: none !important;
-  }
+      @media print {
+        .print-btn, .navbar, .sidebar { display: none !important; }
+        body { margin: 0; padding: 0; }
+      }
 
-  /* نخلي الفاتورة تستغل كامل الصفحة */
-  body {
-    margin: 0;
-    padding: 0;
-  }
-}
-      body { 
-        font-family: Arial, sans-serif; 
-        padding: 10px 20px; 
-        color: #333; 
-        font-size: 11px;
-      }
+      body { font-family: Arial, sans-serif; padding: 10px 20px; color: #333; font-size: 12px; }
+
+      /* ======= رأس الفاتورة ======= */
       .header {
-    display: flex;
-    justify-content: space-between; /* يخلي العناصر بعاد */
-    align-items: center; /* يخليهم فخط واحد عمودياً */
-    margin-bottom: 10px;
-  }
-  .logo {
-    max-height: 350px; /* نقص الحجم باش يبان مناسب */
-    margin: 0; /* نشيل auto اللي كانت كاتخليه فالوسط */
-  }
-  .facture-info {
-    border: 1px solid #000;
-    padding: 5px 12px;
-    font-size: 11px;
-    width: fit-content;
-  }
-      .box {
-        border: 1px solid #000;
-        padding: 5px 10px;
-        margin-top: 5px;
-        font-size: 11px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 15px;
       }
+
+      .logo-box {
+        width: 350px;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent; /* اختياري: فقط للمعاينة */
+      }
+
+      .logo {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+
+
+      .facture-info {
+        border: 1px solid #000;
+        padding: 8px 12px;
+        font-size: 14px;
+        text-align: left;
+      }
+
+      /* ======= معلومات العميل والدفع ======= */
+      .box { border: 1px solid #000; padding: 8px 12px; margin-top: 5px; font-size: 12px; }
       .client-info, .payment-info { margin-bottom: 10px; }
+      .flex-box { display:flex; gap:10px; margin-bottom:10px; flex-wrap: wrap; }
+      .flex-box .box { flex:1; }
+
+      /* ======= الجدول ======= */
       table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 10px;
-        font-size: 11px;
+        font-size: 14px;
+        min-height: 300px;
       }
       th, td {
         border: 1px solid #000;
-        padding: 4px 6px;
+        padding: 8px 10px;
         text-align: center;
       }
       th { background: #f1f1f1; }
+
+      /* ======= المجموع بالكلمات ======= */
+      .amount-words { width: 100%; text-align: left; margin-top: 8px; }
+      .amount-words .title { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+      .amount-words .words { font-size: 13px; font-style: italic; }
+
+      /* ======= المجموع الكلي ======= */
       .totals {
         margin-top: 10px;
-        width: 200px;
+        width: 220px;
         margin-left: auto;
         border: 1px solid #000;
-        font-size: 11px;
+        font-size: 14px;
       }
-      .totals div {
-        display: flex;
-        justify-content: space-between;
-        padding: 4px 6px;
-        border-bottom: 1px solid #000;
-      }
-      .totals div:last-child {
-        font-weight: bold;
-        background: #f1f1f1;
-      }
-      .amount-words {
-        width: 100%;
-        text-align: left;
-        margin-top: 8px;
-      }
-      .amount-words .title {
-        font-weight: bold;
-        font-size: 12px;
-        margin-bottom: 2px;
-      }
-      .amount-words .words {
-        font-size: 11px;
-        font-style: italic;
-      }
-      .footer {
-        margin-top:15px; 
-        text-align:center; 
-        font-size: 10px;
-      }
+      .totals div { display: flex; justify-content: space-between; padding: 4px 6px; border-bottom: 1px solid #000; }
+      .totals div:last-child { font-weight: bold; background: #f1f1f1; }
+
+      /* ======= الفوتر ======= */
+      .footer { margin-top:20px; text-align:center; font-size: 11px; }
       .footer p { margin: 2px 0; }
-      .print-btn {
-        margin-top: 12px;
-        padding: 8px 16px;
-        font-size: 12px;
-        background: #2563eb;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .print-btn:hover {
-        background: #1e40af;
-      }
+
+      /* ======= زر الطباعة ======= */
+      .print-btn { margin-top: 12px; padding: 8px 16px; font-size: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+      .print-btn:hover { background: #1e40af; }
     </style>
   </head>
   <body>
     <div class="header">
-      <img src="${logoPath}" alt="Logo" class="logo">
+      <div class="logo-box">
+        <img src="${logoPath}" alt="Logo" class="logo">
+      </div>
+     
       <div class="facture-info">
         <p><strong>FACTURE N°:</strong> ${
           invoice.invoiceNumber || "inconnu"
@@ -259,15 +234,21 @@ const Invoices = () => {
         <p><strong>Date:</strong> ${new Date(
           invoice.dateCreation || invoice.createdAt
         ).toLocaleDateString("fr-FR")}</p>
+        <p><strong>Client:</strong> ${invoice.customerName || "inconnu"}</p>
+        ${
+          invoice.customerICE
+            ? `<p><strong>ICE:</strong> ${invoice.customerICE}</p>`
+            : ""
+        }
       </div>
     </div>
 
-    <div style="display:flex; gap:10px; margin-bottom:10px;">
-      <div class="box payment-info" style="flex:1;">
+    <div class="flex-box">
+      <div class="box payment-info">
         <strong>MODE DE RÈGLEMENT:</strong><br>
         <p>${invoice.paymentMethod || "Espèces"}</p>
       </div>
-      <div class="box client-info" style="flex:1;">
+      <div class="box client-info">
         <strong>CLIENT:</strong><br>
         <p>Nom: ${invoice.customerName || "inconnu"}</p>
         ${invoice.customerICE ? `<p>ICE: ${invoice.customerICE}</p>` : ""}
@@ -286,24 +267,23 @@ const Invoices = () => {
         </tr>
       </thead>
       <tbody>
-      ${items
-        .map((item) => {
-          const reference = item.productCode || item.product?.code || "-";
-          const itemTotal = item.unitPrice * item.quantity;
-          const discountRate = item.remise || 0; // 👈 استخدم remise الخاص بالمنتج
-          const discountAmount = (itemTotal * discountRate) / 100;
-          const netTotal = itemTotal - discountAmount;
-
-          return `<tr>
-      <td>${reference}</td>
-      <td>${item.productName || "Produit inconnu"}</td>
-      <td>${item.quantity || 0}</td>
-      <td>${formatPrice(item.unitPrice)}</td>
-      <td>${discountRate}%</td>
-      <td>${formatPrice(netTotal)}</td>
-    </tr>`;
-        })
-        .join("")}
+        ${items
+          .map((item) => {
+            const reference = item.productCode || item.product?.code || "-";
+            const itemTotal = item.unitPrice * item.quantity;
+            const discountRate = item.remise || 0;
+            const discountAmount = (itemTotal * discountRate) / 100;
+            const netTotal = itemTotal - discountAmount;
+            return `<tr>
+            <td>${reference}</td>
+            <td>${item.productName || "Produit inconnu"}</td>
+            <td>${item.quantity || 0}</td>
+            <td>${formatPrice(item.unitPrice)}</td>
+            <td>${discountRate}%</td>
+            <td>${formatPrice(netTotal)}</td>
+          </tr>`;
+          })
+          .join("")}
       </tbody>
     </table>
 
